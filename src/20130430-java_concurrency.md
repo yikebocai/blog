@@ -174,7 +174,55 @@ counter  9 : 100
 		}
 	}
 ```
-使用同步块的好处是可以缩小同步范围，有时候并不需要对整个方法进行加锁，另外一个区别是可以灵活指定加锁的对象，不一定需要使用实例对象或类对象，可以使用任意的对象。
+使用同步块的好处是可以缩小同步范围，有时候并不需要对整个方法进行加锁，另外一个区别是可以灵活指定加锁的对象，不一定需要使用实例对象或类对象，可以使用任意的对象。同步块和在方法上使用同步关键词在生成的字节码上也有所区别，前者是在同步块的前后加上`monitorenter`和`monitorexit`字节码指令，而后者是直接在方法表中使用方法访问标志`ACC_SYNCHRONIZED`来标识，如下所示：
+
+```
+#使用同步块
+public void inc();
+  Code:
+   Stack=3, Locals=2, Args_size=1
+   0:	aload_0
+   1:	dup
+   2:	astore_1
+   3:	monitorenter
+   4:	aload_0
+   5:	dup
+   6:	getfield	#18; //Field counter:Ljava/lang/Integer;
+   9:	invokevirtual	#25; //Method java/lang/Integer.intValue:()I
+   12:	iconst_1
+   13:	iadd
+   14:	invokestatic	#12; //Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+   17:	putfield	#18; //Field counter:Ljava/lang/Integer;
+   20:	aload_1
+   21:	monitorexit
+   22:	goto	28
+   25:	aload_1
+   26:	monitorexit
+   27:	athrow
+   28:	return
+   
+   #使用方法关键字
+   public synchronized void inc();
+  Code:
+   Stack=3, Locals=1, Args_size=1
+   0:	aload_0
+   1:	dup
+   2:	getfield	#18; //Field counter:Ljava/lang/Integer;
+   5:	invokevirtual	#25; //Method java/lang/Integer.intValue:()I
+   8:	iconst_1
+   9:	iadd
+   10:	invokestatic	#12; //Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+   13:	putfield	#18; //Field counter:Ljava/lang/Integer;
+   16:	return
+```
 
 举个例子来形容线程同步，比如办公室只有一个卫生间，一次只能容纳一个人方便，这个卫生间就是`竞争条件（Race Condition）`。当一个人进去后就在门口牌子上标识为“有人”，这个就相当于是线程的加锁，告诉其它同时间想要上厕所的人，这个资源已被我占位，其他人就需要等待，就相当于是执行线程的wait()方法。只有当前面的人出来后，并把牌子置为“无人”时，其它人才有机会使用。当只有一个蹲位时，一次只能进一个人，翻动一块牌子加一把锁，这个就叫`互斥锁（Mutex）`。如果前面的人是随机通知等待的某一个人，这个就相当于执行线程的notify()方法，如果他是对着所有等待的人喊一嗓子，就相当于是notifyAll()。不管是notify还是notifyAll，多个等待的人都需要竞争资源，如果竞争策略不合理，有可能导致有个倒霉的家伙一直进不去，这有违人性，呵呵。解决的办法一是按时间顺序先到先得，顺序进入，火车站的厕所经常会看到这种情况，总是有机会轮到自己。还有一种情况，就是大老板也在排队，一般情况下大老板时间宝贵，可以优先考虑让他先上，对应到线程里就是线程的优先级，一共有10种，优先级越高被调度到的机会越多。
+
+## 常用的锁
+
+## 线程间通信
+
+## 线程池
+
+
 
