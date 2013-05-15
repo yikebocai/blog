@@ -11,11 +11,11 @@ java并发和多线程
 
 ![concurrentcy and parrellism](../img/concurrency_parallelism.jpg)
 
-分时技术的实现通常有两种，一种是[抢占式（Preemtive）](http://en.wikipedia.org/wiki/Preemption_(computing))，现在主流的操作系统像Windows 7、Linux、Unix、Mac OS X等都是使用的这一种，另外一种是[协作式（Cooperative）](http://en.wikipedia.org/wiki/Computer_multitasking#Cooperative_multitasking.2Ftime-sharing)，在一些早期的操作系统上，比如Windows 3.x，Window 95、97、Me也还保留的有，以及早期的苹果MAC OS上都使用这种方式，它的最大缺点就是假如在执行一个时间片时遇到IO阻塞或死锁，有可能导致其它进程或线程长时间甚至一直获取不了计算资源，因此这种方式已被现在操作系统抛弃。
+分时技术的实现通常有两种，一种是[抢占式（Preemtive）](http://en.wikipedia.org/wiki/Preemption_(computing)，现在主流的操作系统像Windows 7、Linux、Unix、Mac OS X等都是使用的这一种，另外一种是[协作式（Cooperative）](http://en.wikipedia.org/wiki/Computer_multitasking#Cooperative_multitasking.2Ftime-sharing)，在一些早期的操作系统上，比如Windows 3.x，Window 95、97、Me也还保留的有，以及早期的苹果MAC OS上都使用这种方式，它的最大缺点就是假如在执行一个时间片时遇到IO阻塞或死锁，有可能导致其它进程或线程长时间甚至一直获取不了计算资源，因此这种方式已被现在操作系统抛弃。
 
 在操作系统层面，更多的是通过多[进程](http://en.wikipedia.org/wiki/Process_(computing)的方式来实现并发，而像Java这些高级语言使用到的更多的是更轻量级的多[线程](http://en.wikipedia.org/wiki/Thread_(computing))，因为线程可以在`用户区（user space）`进行`上下文切换（context switch）`，理论上来说有更好的并发性能。进程是可运行的计算机程序实例，它拥有独立的地址空间，而线程是共享地址空间。一个进程可以对应多个线程，Java中每个线程拥有共享的堆（Heap）和独立的栈（Stack）空间。进程和线程的区别，可以参考阮一峰写的这篇文章[进程和线程的一个简单解释](http://www.ruanyifeng.com/blog/2013/04/processes_and_threads.html)。
 
-进程和线程的区别维基百科是[这样定义的](http://en.wikipedia.org/wiki/Thread_(computing))：
+进程和线程的区别维基百科是[这样定义的](http://en.wikipedia.org/wiki/Thread_(computing)：
 
 * 进程之前相互是没有依赖的，而线程是作为进行的一个子集存在的
 * 进行比线程更多地考虑状态信息，而在一个进程中的多线程和内存及其它资源一样共享进程状态
@@ -225,6 +225,12 @@ public void inc();
 ```
 
 ## 常用的锁
+虽然使用同步关键字`synchronized`就可以实现同步，并且各种锁内部其实还是用到了同步关键字，但锁带来的好处是更灵活。
+互斥锁
+自旋锁
+重入锁
+偏向锁
+读写锁
 
 ## 线程间通信
 
@@ -233,7 +239,8 @@ public void inc();
 ## 白话并发
 办公室只有一个卫生间，一次只能容纳一个人方便，这个卫生间就是`竞争条件（Race Condition）`。当一个人进去后就在门口牌子上标识为“有人”，这个就相当于是线程的加锁，告诉其它同时间想要上厕所的人，这个资源已被我占位，其他人就需要等待，这叫`wait`。只有当前面的人出来后，并把牌子置为“无人”时，其它人才有机会使用。当只有一个蹲位时，一次只能进一个人，翻动一块牌子加一把锁，这个就叫`互斥锁（Mutex）`。如果卫生间里有多个蹲位，再简单地用一块牌子来标识就不行了，需要做一个电子公告牌，进去一个人电子公告牌就把可用数量减1，出来一个人数量加1，数量不为0时，有人来直接进去就行了不用等待，这个叫`信号量（Semaphores）`。如果出来的人是随机通知等待的某一个人，这叫`notify`，如果他是对着所有等待的人喊一嗓子，就是`notifyAll`。如果使用notify，有些倒霉的家伙可能永远也不会被通知到，这太不人性了，而如果使用nofityAll就意味着所有等待的人需要竞争资源，还是会在倒霉蛋永远轮不到。解决的办法一是按时间顺序先到先得，顺序进入，火车站的厕所经常会看到这种情况，总是有机会轮到自己，这叫`公平锁（FairLock）`。还有一种情况，就是大老板也在排队，一般情况下大老板时间宝贵，可以优先考虑让他先上，这叫`线程优先级`，一共有10个级别。优先级只能保证级别高的优先被调度到，但不能保证一定会被调度到。
 
-两个好基友一起在蹲坑，其中一个在手机上看到一个特别好玩的段子，另一个说发给我也看看，这叫`线程间通信`。
+两个好基友一起在蹲坑，只有一卷手纸，一个人去取时另一个就不能同时去取，这叫`基于共享内存的线程间通信`。两个人都是烟鬼，但只带了一个打火机，一个人用完之后递给另外一个人，
 
+进程和线程的区别：一个办公区有多个卫生间，每个卫生间的资源是独立的，不会相互依赖，相当于是进程。每个卫生间有多个蹲位，每个蹲位相当于是一个线程，蹲位越多并发处理能力越强。但多个同一个卫生间的多个蹲位共用一个洗手台，如果蹲位过多，洗手台的资源会成为瓶颈。
 
 
