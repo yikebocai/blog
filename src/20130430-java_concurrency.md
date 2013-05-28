@@ -235,6 +235,107 @@ public void inc();
 ## 线程间通信
 
 ## 线程池
+线程池使用不当引起的死锁
+
+```java
+package org.bocai.concurrency;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+public class ThreadDeadLock {
+	static ExecutorService service = Executors.newSingleThreadExecutor();
+
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+		RenderPageTask task=new RenderPageTask(service);
+		Future<String> html=service.submit(task);
+		
+		System.out.println(html.get());
+	}
+}
+
+class RenderPageTask implements Callable<String> {
+	ExecutorService service;
+	
+	public RenderPageTask(ExecutorService service){
+		this.service=service;
+	}
+	
+	@Override
+	public String call() throws Exception {
+		Future<String> header, footer;
+		header = service.submit(new LoadFileTask("header.html"));
+		footer = service.submit(new LoadFileTask("footer.html"));
+		String page = renderBody();
+
+		String html = header.get() + page + footer.get();
+		return html;
+	}
+	
+	// mock render body
+	private static String renderBody() {
+		return "<body>test</body>";
+	}
+	
+}
+
+
+class LoadFileTask implements Callable<String> {
+	private String file;
+
+	public LoadFileTask(String file) {
+		this.file = file;
+	}
+
+	@Override
+	public String call() throws Exception {
+		//Thread.sleep((int) (Math.random() * 10000));
+		return "<test>aaa</test>";
+	}
+
+}
+
+```
+
+使用`jstack pid`打印线程堆栈，可以看到两个线程在相当等待：
+```
+"pool-1-thread-1" prio=5 tid=7ff5acaa1800 nid=0x1166a5000 waiting on condition [1166a4000]
+   java.lang.Thread.State: WAITING (parking)
+	at sun.misc.Unsafe.park(Native Method)
+	- parking to wait for  <7f3156dd0> (a java.util.concurrent.FutureTask$Sync)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:156)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:811)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireSharedInterruptibly(AbstractQueuedSynchronizer.java:969)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireSharedInterruptibly(AbstractQueuedSynchronizer.java:1281)
+	at java.util.concurrent.FutureTask$Sync.innerGet(FutureTask.java:218)
+	at java.util.concurrent.FutureTask.get(FutureTask.java:83)
+	at org.bocai.concurrency.RenderPageTask.call(ThreadDeadLock.java:34)
+	at org.bocai.concurrency.RenderPageTask.call(ThreadDeadLock.java:1)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:303)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:138)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:895)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:918)
+	at java.lang.Thread.run(Thread.java:680)
+	
+	
+"main" prio=5 tid=7ff5b0800800 nid=0x10dd78000 waiting on condition [10dd77000]
+   java.lang.Thread.State: WAITING (parking)
+	at sun.misc.Unsafe.park(Native Method)
+	- parking to wait for  <7f311d7a0> (a java.util.concurrent.FutureTask$Sync)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:156)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:811)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireSharedInterruptibly(AbstractQueuedSynchronizer.java:969)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireSharedInterruptibly(AbstractQueuedSynchronizer.java:1281)
+	at java.util.concurrent.FutureTask$Sync.innerGet(FutureTask.java:218)
+	at java.util.concurrent.FutureTask.get(FutureTask.java:83)
+	at org.bocai.concurrency.ThreadDeadLock.main(ThreadDeadLock.java:16)
+
+
+
+```
 
 ## 白话并发
 办公室只有一个卫生间，一次只能容纳一个人方便，这个卫生间就是`竞争条件（Race Condition）`。当一个人进去后就在门口牌子上标识为“有人”，这个就相当于是线程的加锁，告诉其它同时间想要上厕所的人，这个资源已被我占位，其他人就需要等待，这叫`wait`。只有当前面的人出来后，并把牌子置为“无人”时，其它人才有机会使用。当只有一个蹲位时，一次只能进一个人，翻动一块牌子加一把锁，这个就叫`互斥锁（Mutex）`。如果卫生间里有多个蹲位，再简单地用一块牌子来标识就不行了，需要做一个电子公告牌，进去一个人电子公告牌就把可用数量减1，出来一个人数量加1，数量不为0时，有人来直接进去就行了不用等待，这个叫`信号量（Semaphores）`。如果出来的人是随机通知等待的某一个人，这叫`notify`，如果他是对着所有等待的人喊一嗓子，就是`notifyAll`。如果使用notify，有些倒霉的家伙可能永远也不会被通知到，这太不人性了，而如果使用nofityAll就意味着所有等待的人需要竞争资源，还是会在倒霉蛋永远轮不到。解决的办法一是按时间顺序先到先得，顺序进入，火车站的厕所经常会看到这种情况，总是有机会轮到自己，这叫`公平锁（FairLock）`。还有一种情况，就是大老板也在排队，一般情况下大老板时间宝贵，可以优先考虑让他先上，这叫`线程优先级`，一共有10个级别。优先级只能保证级别高的优先被调度到，但不能保证一定会被调度到。
