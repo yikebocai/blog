@@ -13,7 +13,7 @@ GitHub本身是一个非常优秀的代码托管网站，其实它不仅仅可�
 * **可以自动同步GitHub上的文章**。对于自动同步功能，可以通过shell脚本来实现，另外需要的定时功能，我选了[Quartzite](http://clojurequartz.info/)来实现定时器调度。
 * **支持我自己约定的文章标题和发布时间**。对于发表时间，我约定了GitHub上的文章名格式为`yyyymmdd-xxx_yyy.md`，前面为发表时间，后面为英文标题，文章内容的第一行约定为中文标题。
 * **支持Markdown格式的文章展示**。使用了[markdown-clj](https://github.com/yogthos/markdown-clj)把markdown格式的文章转换成Html文档。
-* **支持GitHub风格的源代码高亮展示和Clojure源代码**。用markdown-clj转成html后，````clojure `风格的源代码会转成[SyntaxHightlighter](http://alexgorbatchev.com/SyntaxHighlighter/ )风格的`<pre>`标签，引入该组件可以进行常用代码的高亮，但Clojure需要单独安装自己的[shClojureBrusher](https://github.com/sattvik/sh-clojure)。
+* **支持GitHub风格的源代码高亮展示和Clojure源代码**。用markdown-clj转成html后，GitHub风格的源代码会转成[SyntaxHightlighter](http://alexgorbatchev.com/SyntaxHighlighter/ )风格的`<pre>`标签，引入该组件可以进行常用代码的高亮，但Clojure需要单独安装自己的[shClojureBrusher](https://github.com/sattvik/sh-clojure)。
 * **能够支持社会化网络的分享和评估**。分享选用了[加网](http://www.jiathis.com/ )的分享功能，评论功能选了该网站旗下的[友言](
 http://www.uyan.cc/)
 * **支持文本搜索便于查询历史内容**。选用了[Clucy](https://github.com/weavejester/clucy)，这个是基于Lucene的一个Clojure包装。
