@@ -297,7 +297,6 @@ class LoadFileTask implements Callable<String> {
 	}
 
 }
-
 ```
 
 使用`jstack pid`打印线程堆栈，可以看到两个线程在相当等待：
