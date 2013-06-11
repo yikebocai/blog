@@ -26,7 +26,8 @@ chown -R root.root /home/guest/.bashrc /home/guest/.bash_profile
 ```
 ssh -qCNgf guest@192.154.1.1-D 127.0.0.1:7070
 ```
-`-C`表示使用数据压缩，会比较省流量，后面是VPS创建的帐号和IP地睛
+`-C`表示使用数据压缩，会比较省流量，后面是VPS创建的帐号和IP地址
+
 `-D`表示本地侦听端口，在配置代理服务的时候就是填上该参数后面的IP和端口
 
 安装Chrome插件SwitchySharp，新建场景GFW，选择`手动代理->Socket代理`，不要选择Http代理，会报下面的错误：
