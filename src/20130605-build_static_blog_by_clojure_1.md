@@ -37,6 +37,8 @@ Clojure世界里大名鼎鼎Web应用框架首推[Ring](https://github.com/ring-
 
 为了能在页面上实现动态内容的加载，引入了一个模板引擎[Clabango](https://github.com/danlarkin/clabango)，功能比[Velocity](http://velocity.apache.org/)是简陋多了，但基本可以满足要求了。
 
+一直做Java后端的开发，对前端技术知之甚少，虽然自诩审美还行，但要让我做个清新简洁的页面出来估计也是赶鸭子上架，好在有了现成的框架[Bootstrap](https://github.com/twitter/bootstrap)，可以让我们这些前端菜鸟也能快速做出非常专业漂亮的页面。同时，Bootstrap能够很好地支持多终端的显示，这些移动时代非常有吸引力。
+
 另外，为了方便创建应用程序，引入了另外一个Web框架[Luminus](http://www.luminusweb.net/)，它可以方便地帮我生成基本的Web代码结构，启动应用程序，打成独立的Jar包或War包。
 
 最后，虽然我写的是一个静态博客程序，但还是需要保存一些基本的配置信息，这就需求用到数据库，但我又不想实现像MySQL这些**重量级**的数据库，正好Luminus示例中也用到了[H2](http://www.h2database.com)这个轻量级的内存数据库，反正要保存的数据很少，之前在公司里做系统也用到过，就它了。访问数据库，可以使用Clojure提供的jdbc包，但我更喜欢Clojure风格的数据层框架[Korma](http://sqlkorma.com/)，可以使用Clojure的风格方便地进行数据库的操作。
