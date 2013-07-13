@@ -103,3 +103,97 @@ ClassCastException java.lang.Long cannot be cast to clojure.lang.IPersistentColl
 ```
 
 ## 数据库访问
+数据库的访问，可以通过`clojure.java.jdbc`来实现，但[korma](http://sqlkorma.com/)以Lisp风格的访问方式显然更贴近我们学习Clojure的初衷。数据库的访问分成两部分，第一部分是数据库的定义，包括生成的数据库文件名、数据库名连接URL、表结构的创建等，第二部分是表的CRUD操作。首先来看一下定义部分：
+
+```clojure
+(def db-store "site")
+
+(def db-spec {:classname "org.h2.Driver"
+              :subprotocol "h2"
+              :subname (str (io/resource-path) db-store)
+              :user "sa"
+              :password ""
+              :naming {:keys clojure.string/lower-case
+                       :fields clojure.string/upper-case}})
+                       
+(defn initialized?
+  "checks to see if the database schema is present"
+  []
+  (.exists (new java.io.File (str (io/resource-path) db-store ".h2.db"))))
+
+
+(defn create-blog-table []
+  "create blog table,save blog related info,like title,postdate etc"
+  (jdbc/with-connection
+    db-spec
+    (jdbc/create-table
+      :blog
+      [:id "INTEGER PRIMARY KEY AUTO_INCREMENT"]
+      [:timestamp :timestamp] 
+      [:name "varchar(100)"]    ;md file name
+      [:title "varchar(100)"]   ;blog title
+      [:summary "varchar(256)"] ;blog summary
+      [:postdate "INTEGER"]     ;blog post date
+      [:pageview "INTEGER"]
+      [:vote "INTEGER"] 
+      [:share "INTEGER"]
+      )
+    (jdbc/do-commands
+      "CREATE INDEX postdate_index ON blog (postdate)"
+      "CREATE INDEX name_index ON blog (name)"
+      "CREATE INDEX vote_index ON blog (vote)")
+    ))
+    
+    (defn create-tables
+  "creates the database tables used by the application"
+  []
+  (do 
+    (if (create-blog-table) (timbre/info "create blog table")) 
+    ))
+```
+
+此时，还和korma没有扯上关系，只是一些基本的定义，我们定义了生成H2数据库的文件名，访问数据库协议、用户名密码等，在定义subname时用到了`io/resource-path`，它是`noir`提供的一个功能，用来获取资源文件的路径，默认为`resources/public`。
+
+```clojure
+(defdb db schema/db-spec)
+
+(declare tag)
+(defentity blog
+  (pk :id)
+  (has-many tag))
+(defentity config)
+(defentity tag
+  (pk :id)
+  (table :tag)
+  (belongs-to blog))
+```
+
+上面定义了访问的数据库和一些数据库实体，`defdb`能够起到数据库连接池的作用。对数据库CRUD操作，Korma给予了原生的支持，而不用写SQL，最大的好处是灵活。
+
+```clojure
+(defn post-blog
+  [postdate name title summary]
+  (insert blog 
+    (values {
+      :timestamp (new java.util.Date)
+      :postdate postdate 
+      :name name 
+      :title title
+      :summary summary
+        })))
+
+(defn find-blog [id]
+  (select blog  
+    (where {:id [= id]})))
+
+(defn update-blog [id postdate name title summary]
+  (update blog 
+  	(set-fields
+       {:timestamp (new java.util.Date)
+        :postdate postdate 
+        :name name
+        :title title
+        :summary summary})
+        (where {:id [= id]})
+        ))
+```
