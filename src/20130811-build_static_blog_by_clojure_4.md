@@ -207,7 +207,7 @@ MD5算法直接调用jdk里的`MessageDigest`类，不仅可以实现MD5，还�
 
 上面的功能只是把文章拉到服务器的本地目录，后面还需要解析文件，把摘要信息写到数据库，因为不可能每次展示的时候再实时地解析所有文章，如果文章特别多的时候就会很慢，也不便于查询。保存的信息主要是发布日期（用于排序）、文章标题、摘要、文件名称等。同时，也会解析Tag标签，更新tag表。
 
-```
+```clojure
 (defn- sync-db [path]
   (let [timestamp (java.util.Date.)
         dbresp
@@ -246,7 +246,7 @@ MD5算法直接调用jdk里的`MessageDigest`类，不仅可以实现MD5，还�
  
  ![sync](myimg/sync.png)
  
- ## 数据库管理工具
+## 数据库管理工具
  
  如果你开始的时候建了两张表，后面想再加一张表，你会发现有点麻烦，系统重启重启时会检查h2数据文件是否存在，不存在时才会初始化表，否则是不会初始化的，必须把h2数据文件删除，然后再重新初始化，这会有点不便，因为之前表中的数据会丢失。因此，增加了一个小功能，可以输入表名进行初始化。另外，h2没有客户端可以查询表里的内容有时想看一下原始内容非常不便，因此也增加了一个查表功能，输入表名直接把原始内容以Json格式全部展示。
  
@@ -267,7 +267,7 @@ MD5算法直接调用jdk里的`MessageDigest`类，不仅可以实现MD5，还�
  
  ![dbmanager](myimg/dbmanager.png)
  
- ## 后记
+## 后记
  
  上述功能可以查看[源代码](https://github.com/yikebocai/blogapp/tree/master/myapp)中的config.clj、sync.clj、dbamanger.clj以及对应的页面config.html、sync.html、dbmanager.html，当然还是handler.clj。也可以访问我用该系统搭建的[一棵波菜](http://yikebocai.com)。
  
