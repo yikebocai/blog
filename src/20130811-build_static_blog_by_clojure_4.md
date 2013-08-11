@@ -269,6 +269,6 @@ MD5算法直接调用jdk里的`MessageDigest`类，不仅可以实现MD5，还�
  
 ## 后记
  
- 上述功能可以查看[源代码](https://github.com/yikebocai/blogapp/tree/master/myapp)中的config.clj、sync.clj、dbamanger.clj以及对应的页面config.html、sync.html、dbmanager.html，当然还是handler.clj。也可以访问我用该系统搭建的[一棵波菜](http://yikebocai.com)。
+ 上述功能可以查看[源代码](https://github.com/yikebocai/blogapp/tree/master/myapp)中的config.clj、sync.clj、dbamanger.clj以及对应的页面config.html、sync.html、dbmanager.html，当然还有handler.clj。也可以访问我用该系统搭建的[一棵波菜](http://yikebocai.com)。
  
 
