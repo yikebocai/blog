@@ -6,6 +6,8 @@ Tag:Git
 
 关于Git的入门介绍，严重推荐廖雪峰写的[Git教程](http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000)，浅显易懂，非常适合入门者。话说当初学习Git时，老是搞不清楚一些原理，看这个之后才有恍然大悟的感觉。其次是推荐[Pro Git](http://ikandou.com/book/7188000/),记得最初学习Git时就是读的这本。
 
+## Git服务器搭建
+
 [GitHub](https://github.com)本来是非常理想的代码托管网站，但建私有库是不免费的，有各种不同的[收费方案](https://github.com/pricing)，对于一个10+的开发团队来说每月至少25美刀以上，也是一笔不少的开支，本能自己动手丰衣足食的原则，还是自己搭建一套吧，搞技术的就是这点好，不用求人。
 
 [GitLab](http://gitlab.org/)是一个完全模仿GitHub而开发的一个开源私人代码托管应用，但是经过我多次尝试，都没有安装成功，所依赖的东西实在太多了，有一个组件安装不成功就完蛋了，这个时候觉得Mac下的dmg和Windows下的exe安装方式实在太他妈让人喜爱了。
@@ -34,4 +36,11 @@ and the repository exists.
           RW         = xinbo
 ```
 
+## 迁移Git服务器
 
+原来Git部署到了一个VPS服务器上，这个服务器同时还部署了公司的官网，最近官网频繁受到攻击而被服务商暂停使用，因此需要将Git仓库迁移到另外一个服务器上，这时Git分布式的优势就体现出来了，你完全不用担心Git服务器被攻击或损坏后代码丢失，只要有一份完整的代码拷贝，你就可以随时搭建出新的Git服务器。
+
+* 在新服务器创建一个目录repo，然后进入repo目录并初始化一个裸仓库 `git init --bare test.git`
+* 修改本地工作目录，比如test/.git/config文件，将remote url修改成新的仓库地址，比如:git@newhost:repo/test.git ，或者直接执行命令`git remote set-url origin git@newhost:repo/test.git`进行修改
+* 将本地代码推送到新的仓库 `git push origin master`
+* 从新仓库clone下这个库，可以用tree命令查看代码结构验证是否已推送成功 `git clone git@newhost:repo/test.git`
